@@ -1,0 +1,23 @@
+.hero-item {
+	&-enter {
+		opacity: 0;
+		transform: translateX(-10px);
+	}
+
+	&-enter-active {
+		opacity: 1;
+		transform: translateX(0);
+		transition: opacity 300ms ease, transform 300ms ease;
+	}
+
+	&-exit {
+		opacity: 1;
+		transform: translateX(0);
+	}
+
+	&-exit-active {
+		opacity: 0;
+		transform: translateX(10px);
+		transition: opacity 300ms ease, transform 300ms ease;
+	}
+}
