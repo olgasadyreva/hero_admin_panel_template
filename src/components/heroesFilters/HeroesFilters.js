@@ -4,64 +4,71 @@
 // Активный фильтр имеет класс active
 // Изменять json-файл для удобства МОЖНО!
 // Представьте, что вы попросили бэкенд-разработчика об этом
-
+import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import classNames from 'classnames'
 
-import { filtersChange } from '../../actions'
+import { filtersChanged, fetchFilters, selectAll } from './filtersSlice'
+import Spinner from '../spinner/Spinner'
 
-const filterLabels = {
-	all: 'Все',
-	fire: 'Огонь',
-	water: 'Вода',
-	wind: 'Ветер',
-	earth: 'Земля',
-}
+// const filterLabels = {
+// 	all: 'Все',
+// 	fire: 'Огонь',
+// 	water: 'Вода',
+// 	wind: 'Ветер',
+// 	earth: 'Земля',
+// }
 
 const HeroesFilters = () => {
-	const filters = useSelector(state => state.filters)
-	const activeFilter = useSelector(state => state.activeFilter)
+	// const filters = useSelector(state => state.filters)
+	// const activeFilter = useSelector(state => state.activeFilter)
+	// const dispatch = useDispatch()
+
+	// if (!filters || !filters.length) return null
+
+	// const handleFilterClick = filter => {
+	// 	dispatch(filtersChange(filter))
+	// }
+	const { filtersLoadingStatus, activeFilter } = useSelector(state => state.filters)
+	const filters = useSelector(selectAll)
 	const dispatch = useDispatch()
 
-	if (!filters || !filters.length) return null
+	useEffect(() => {
+		dispatch(fetchFilters())
+		// eslint-disable-next-line
+	}, [])
 
-	const handleFilterClick = filter => {
-		dispatch(filtersChange(filter))
+	if (filtersLoadingStatus === 'loading') {
+		return <Spinner />
+	} else if (filtersLoadingStatus === 'error') {
+		return <h5 className="text-center mt-5">Ошибка загрузки</h5>
 	}
 
-	const renderFilters = () => {
-		return filters.map(filter => {
-			const isActive = filter === activeFilter
-			const isAll = filter === 'all'
+	const renderFilters = arr => {
+		if (arr.length === 0) {
+			return <h5 className="text-center mt-5">Фильтры не найдены</h5>
+		}
+
+		return arr.map(({ name, className, label }) => {
+			const btnClass = classNames('btn', className, {
+				active: name === activeFilter,
+			})
 
 			return (
-				<button
-					key={filter}
-					type="button"
-					className={classNames(
-						'btn',
-						{
-							'btn-outline-dark': isAll,
-							'btn-danger': filter === 'fire',
-							'btn-primary': filter === 'water',
-							'btn-success': filter === 'wind',
-							'btn-secondary': filter === 'earth',
-						},
-						{ 'btn-dark': isActive && !isAll },
-						{ active: isActive },
-					)}
-					onClick={() => handleFilterClick(filter)}>
-					{filterLabels[filter] || filter}
+				<button key={name} id={name} className={btnClass} onClick={() => dispatch(filtersChanged(name))}>
+					{label}
 				</button>
 			)
 		})
 	}
 
+	const elements = renderFilters(filters)
+
 	return (
 		<div className="card shadow-lg mt-4">
 			<div className="card-body">
 				<p className="card-text">Отфильтруйте героев по элементам</p>
-				<div className="btn-group">{renderFilters()}</div>
+				<div className="btn-group">{elements}</div>
 			</div>
 		</div>
 	)
